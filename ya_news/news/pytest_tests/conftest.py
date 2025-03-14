@@ -1,8 +1,7 @@
-from datetime import  timedelta
+from datetime import timedelta
 
 import pytest
 
-from django.utils import timezone
 from django.conf import settings
 from django.test.client import Client
 from django.utils import timezone
@@ -64,6 +63,7 @@ def create_news(db):
         for index in range(settings.NEWS_COUNT_ON_HOME_PAGE)
     ]
     News.objects.bulk_create(all_news)
+
 
 @pytest.fixture
 def create_comments(author, news, db):
