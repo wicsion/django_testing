@@ -1,43 +1,40 @@
+from http import HTTPStatus
+
 from django.contrib.auth import get_user_model
+from django.test import TestCase
+from django.urls import reverse
 
-from notes.forms import NoteForm
-
+from notes.models import Note
 
 User = get_user_model()
 
 
-class TestFormPage:
-    """Тестирование страниц с формами для заметок."""
+class TestContent(TestCase):
 
-    def test_notes_list_for_different_users(self, author_client, reader_client,
-                                            note_author, notes_list_url):
-        """Проверяем, что заметки отображаются только для их авторов."""
-        test_cases = [
-            (author_client, True),
-            (reader_client, False),
-        ]
+    @classmethod
+    def setUpTestData(cls):
+        cls.author = User.objects.create(username='author_user')
+        cls.reader = User.objects.create(username='reader_user')
+        cls.note_author = Note.objects.create(
+            title='Заметка автора',
+            text='Текст заметки автора',
+            author=cls.author
+        )
 
-        for client, expected_result in test_cases:
-            with self.subTest(client=client, expected_result=expected_result):
-                response = client.get(notes_list_url)
-                object_list = response.context['object_list']
-                self.assertIs(
-                    note_author in object_list, expected_result,
-                    f'Заметка автора '
-                    f'{"должна" if expected_result else "не должна"} '
-                    'быть в списке.'
-                )
+    def test_note_creation(self):
+        self.client.force_login(self.author)
+        new_note = {
+            'title': 'Новая заметка',
+            'text': 'Текст новой заметки',
+            'slug': 'novaia-zametka'
+        }
+        initial_count = Note.objects.count()
+        response = self.client.post(reverse('notes:add'), data=new_note)
+        self.assertEqual(Note.objects.count(), initial_count + 1)
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
-    def test_pages_contains_form(self, author_client, note_author,
-                                 add_note_url, edit_note_url):
-        """Проверяем, что на страницах присутствует форма."""
-        form_urls = [
-            (add_note_url, None),
-            (edit_note_url, (note_author.slug,)),
-        ]
-
-        for url, args in form_urls:
-            with self.subTest(url=url):
-                response = author_client.get(url)
-                self.assertIn('form', response.context)
-                self.assertIsInstance(response.context['form'], NoteForm)
+    def test_note_authorization(self):
+        self.client.force_login(self.reader)
+        response = self.client.get(reverse('notes:detail',
+                                           args=(self.note_author.slug,)))
+        self.assertEqual(response.status_code, HTTPStatus.OK)

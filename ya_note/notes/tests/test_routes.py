@@ -1,35 +1,39 @@
 from http import HTTPStatus
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-
 from notes.models import Note
-
 
 User = get_user_model()
 
 
-class TestFixtures(TestCase):
+class TestRoutes(TestCase):
+    """Тестируем доступность страниц для различных пользователей"""
+
     @classmethod
     def setUpTestData(cls):
+        """Подготовка данных для тестов: пользователи и заметки"""
         cls.author = User.objects.create(username='author_user')
         cls.reader = User.objects.create(username='reader_user')
+        cls.client_author = cls.client
+        cls.client_reader = cls.client.__class__()
+        cls.client_reader.force_login(cls.reader)
+        cls.client_author.force_login(cls.author)
         cls.note_author = Note.objects.create(
             title='Заметка автора',
             text='Текст заметки автора',
-            author=cls.author
+            author=cls.author,
+            slug='zametka-avtora'
         )
         cls.note_reader = Note.objects.create(
             title='Заметка читателя',
             text='Текст заметки читателя',
-            author=cls.reader
+            author=cls.reader,
+            slug='zametka-chitatelya'
         )
 
-
-class TestRoutes(TestFixtures):
-
     def test_pages_availability_for_anonymous_user(self):
+        """Проверяем доступность страниц для анонимных пользователей"""
         urls = (
             ('notes:home', None),
             ('users:login', None),
@@ -44,6 +48,7 @@ class TestRoutes(TestFixtures):
                 )
 
     def test_pages_availability_for_authorized_users(self):
+        """Проверяем доступность страниц для авторизованных пользователей"""
         self.client.force_login(self.reader)
         urls = (
             ('notes:success', None),
@@ -58,6 +63,7 @@ class TestRoutes(TestFixtures):
                 )
 
     def test_pages_availability_for_different_users(self):
+        """Проверяем доступность страниц для разных пользователей"""
         users_statuses = (
             (self.author, HTTPStatus.OK),
             (self.reader, HTTPStatus.NOT_FOUND),
@@ -74,6 +80,7 @@ class TestRoutes(TestFixtures):
                     )
 
     def test_redirect_for_anonymous_client(self):
+        """Проверяем редирект для анонимных пользователей"""
         login_url = reverse('users:login')
         urls = (
             ('notes:edit', (self.note_author.slug,)),
