@@ -16,6 +16,11 @@ class TestFormPage(TestFixtures):
         self.assertIn(self.note_author, response.context['object_list'])
         self.assertContains(response, self.note_author.title)
         self.assertNotContains(response, self.note_reader.title)
+        self.client.force_login(self.reader)
+        response = self.client.get(reverse('notes:list'))
+        self.assertIn(self.note_reader, response.context['object_list'])
+        self.assertContains(response, self.note_reader.title)
+        self.assertNotContains(response, self.note_author.title)
 
     def test_pages_contains_form(self):
         self.client.force_login(self.author)

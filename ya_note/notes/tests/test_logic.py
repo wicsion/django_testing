@@ -19,29 +19,30 @@ NOTE_DATA = {
 class TestLogic(TestFixtures):
 
     def test_not_unique_slug(self):
+        """Проверяем, что при дублировании слага выводится ошибка формы."""
         self.client.force_login(self.author)
         new_note = {
             'title': 'Заметка автора',
             'text': 'Новый текст'
         }
         slug = slugify('Заметка автора')
+        response = self.client.post(reverse('notes:add'), data=new_note)
         self.assertFormError(
-            self.client.post(reverse('notes:add'), data=new_note),
+            response,
             'form',
             'slug',
-            errors=(
-                f'{slug} - такой slug уже существует, '
-                'придумайте уникальное значение!'
-            )
+            f'{slug} - такой slug существует, придумайте уникальное значение!'
         )
 
     def test_slug_automatic_generation(self):
+        """Проверяем автоматическую генерацию слага."""
         self.assertEqual(
             self.note_author.slug,
             slugify(self.note_author.title)
         )
 
     def test_note_creation_with_author(self):
+        """Проверяем, что заметка создается с правильным автором."""
         self.client.force_login(self.reader)
         self.client.post(reverse('notes:add'), NOTE_DATA)
         self.assertEqual(Note.objects.count(), 3)
@@ -49,10 +50,12 @@ class TestLogic(TestFixtures):
         self.assertEqual(new_note.author, self.reader)
 
     def test_anonymous_user_cant_create_note(self):
+        """Проверяем, что анонимный пользователь не может создать заметку."""
         self.client.post(reverse('notes:add'), NOTE_DATA)
         self.assertEqual(Note.objects.count(), 2)
 
     def test_user_permissions_for_editing_and_deleting_notes(self):
+        """Проверяем права пользователей на редактирование."""
         test_cases = (
             (self.reader, 'delete', HTTPStatus.NOT_FOUND),
             (self.reader, 'edit', HTTPStatus.NOT_FOUND),

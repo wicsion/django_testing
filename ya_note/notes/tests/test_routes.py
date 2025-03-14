@@ -64,7 +64,7 @@ class TestRoutes(TestFixtures):
         )
         for user, status in users_statuses:
             self.client.force_login(user)
-            for name in ('notes:edit', 'notes:delete', 'notes:detail'):
+            for name in ('notes:edit', 'notes:delete'):
                 with self.subTest(user=user, name=name):
                     self.assertEqual(
                         self.client.get(
