@@ -10,18 +10,22 @@ User = get_user_model()
 
 
 class TestContent(TestCase):
+    """Тестируем контент и доступ к заметкам."""
 
     @classmethod
     def setUpTestData(cls):
+        """Подготовка данных для тестов: пользователи и заметки."""
         cls.author = User.objects.create(username='author_user')
         cls.reader = User.objects.create(username='reader_user')
         cls.note_author = Note.objects.create(
             title='Заметка автора',
             text='Текст заметки автора',
-            author=cls.author
+            author=cls.author,
+            slug='zametka-avtora'
         )
 
     def test_note_creation(self):
+        """Проверяем создание заметки."""
         self.client.force_login(self.author)
         new_note = {
             'title': 'Новая заметка',
@@ -34,6 +38,7 @@ class TestContent(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
     def test_note_authorization(self):
+        """Проверяем доступ к заметке для разных пользователей."""
         self.client.force_login(self.reader)
         response = self.client.get(reverse('notes:detail',
                                            args=(self.note_author.slug,)))
