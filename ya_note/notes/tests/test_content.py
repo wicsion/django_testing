@@ -7,14 +7,11 @@ User = get_user_model()
 
 
 class TestFormPage:
-    """
-    Тестирование страниц с формами для заметок.
-    """
+    """Тестирование страниц с формами для заметок."""
 
-    def test_notes_list_for_different_users(self, author_client, reader_client, note_author,  notes_list_url):
-        """
-        Проверяем, что заметки отображаются только для их авторов.
-        """
+    def test_notes_list_for_different_users(self, author_client, reader_client,
+                                            note_author, notes_list_url):
+        """Проверяем, что заметки отображаются только для их авторов."""
         test_cases = [
             (author_client, True),
             (reader_client, False),
@@ -26,14 +23,14 @@ class TestFormPage:
                 object_list = response.context['object_list']
                 self.assertIs(
                     note_author in object_list, expected_result,
-                    f'Заметка автора {"должна" if expected_result else "не должна"} быть в списке.'
+                    f'Заметка автора '
+                    f'{"должна" if expected_result else "не должна"} '
+                    'быть в списке.'
                 )
 
-    def test_pages_contains_form(self, author_client, note_author, add_note_url, edit_note_url):
-        """
-        Проверяем, что на страницах добавления и редактирования заметки
-        присутствует форма.
-        """
+    def test_pages_contains_form(self, author_client, note_author,
+                                 add_note_url, edit_note_url):
+        """Проверяем, что на страницах присутствует форма."""
         form_urls = [
             (add_note_url, None),
             (edit_note_url, (note_author.slug,)),

@@ -30,10 +30,9 @@ class TestRoutes(TestCase):
             slug='zametka-chitatelya'
         )
 
-    def test_pages_availability_for_anonymous_user(self, home_url, login_url, logout_url, signup_url):
-        """
-        Проверяем доступность страниц для анонимного пользователя.
-        """
+    def test_pages_availability_for_anonymous_user(self, home_url, login_url,
+                                                   logout_url, signup_url):
+        """Проверяем доступность страниц для анонимного пользователя."""
         urls = (
             home_url,
             login_url,
@@ -47,10 +46,11 @@ class TestRoutes(TestCase):
                     HTTPStatus.OK
                 )
 
-    def test_pages_availability_for_authorized_users(self, reader_client, success_url, notes_list_url, add_note_url):
-        """
-        Проверяем доступность страниц для авторизованного пользователя.
-        """
+    def test_pages_availability_for_authorized_users(self, reader_client,
+                                                     success_url,
+                                                     notes_list_url,
+                                                     add_note_url):
+        """Проверяем доступность страниц для авторизованного пользователя."""
         urls = (
             success_url,
             notes_list_url,
@@ -63,10 +63,10 @@ class TestRoutes(TestCase):
                     HTTPStatus.OK
                 )
 
-    def test_pages_availability_for_different_users(self, author_client, reader_client, note_author):
-        """
-        Проверяем доступность страниц для разных пользователей.
-        """
+    def test_pages_availability_for_different_users(self, author_client,
+                                                    reader_client,
+                                                    note_author):
+        """Проверяем доступность страниц для разных пользователей."""
         users_statuses = (
             (author_client, HTTPStatus.OK),
             (reader_client, HTTPStatus.NOT_FOUND),
@@ -75,14 +75,13 @@ class TestRoutes(TestCase):
             for name in ('notes:edit', 'notes:delete', 'notes:detail'):
                 with self.subTest(client=client, name=name):
                     self.assertEqual(
-                        client.get(reverse(name, args=(note_author.slug,))).status_code,
+                        client.get(reverse(name, args=(note_author.slug,)))
+                        .status_code,
                         status
                     )
 
     def test_redirect_for_anonymous_client(self, login_url, note_author):
-        """
-        Проверяем редирект анонимного пользователя на страницу входа.
-        """
+        """Проверяем редирект анонимного пользователя на страницу входа."""
         urls = (
             ('notes:edit', (note_author.slug,)),
             ('notes:delete', (note_author.slug,)),

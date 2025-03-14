@@ -12,7 +12,8 @@ def test_news_count(client, create_news, home_url, settings):
     assert 'object_list' in response.context, (
         'В контексте ответа отсутствует ключ "object_list".'
     )
-    assert response.context['object_list'].count() == settings.NEWS_COUNT_ON_HOME_PAGE, (
+    assert (response.context['object_list']
+            .count() == settings.NEWS_COUNT_ON_HOME_PAGE), (
         'Количество новостей на странице не соответствует ожидаемому.'
     )
 
@@ -70,7 +71,7 @@ def test_authorized_client_has_form(not_author_client, news_detail_url):
     """
     response = not_author_client.get(news_detail_url)
     assert 'form' in response.context, (
-        'Авторизованный пользователь не видит форму для добавления комментария.'
+        'Авторизованный пользователь не видит форму.'
     )
     assert isinstance(response.context['form'], CommentForm), (
         'В контексте ответа форма не является экземпляром CommentForm.'
