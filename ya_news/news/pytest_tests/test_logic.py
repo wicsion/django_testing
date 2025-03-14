@@ -1,3 +1,5 @@
+import random
+
 import pytest
 
 from http import HTTPStatus
@@ -6,7 +8,7 @@ from django.urls import reverse
 from pytest_django.asserts import assertRedirects, assertFormError
 
 from news.models import Comment
-from news.forms import WARNING
+from news.forms import WARNING, BAD_WORDS
 
 
 @pytest.fixture
@@ -44,16 +46,13 @@ def test_user_can_create_comment(not_author, not_author_client, news,
     assert comment.author == not_author
 
 
-@pytest.mark.django_db
-def test_user_cant_use_bad_words(author_client, news_detail_url, bad_word):
-    """Форма отклоняет комментарии с запрещёнными словами."""
-    response = author_client.post(
-        news_detail_url,
-        data={'text': f'Какой-то текст, {bad_word}, ещё текст'}
-    )
-    form = response.context['form']
-    # Добавляем проверку ошибки на поле 'text' формы
-    assertFormError(form, field='text', errors=WARNING)
+def test_user_cant_use_bad_words(author_client, news):
+    form = author_client.post(
+        news_detail_url(news),
+        data={'text': f'Текст, {random.choice(BAD_WORDS)}, еще текст'}
+    ).context['form']
+    assert 'text' in form.errors
+    assert WARNING in form.errors['text']
     assert Comment.objects.count() == 0
 
 
