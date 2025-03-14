@@ -1,30 +1,46 @@
 from django.contrib.auth import get_user_model
-from django.urls import reverse
 
-from notes.tests.test_routes import TestFixtures
 from notes.forms import NoteForm
 
 
 User = get_user_model()
 
 
-class TestFormPage(TestFixtures):
+class TestFormPage:
+    """
+    Тестирование страниц с формами для заметок.
+    """
 
-    def test_notes_list_for_different_users(self):
-        self.client.force_login(self.author)
-        response = self.client.get(reverse('notes:list'))
-        self.assertIn(self.note_author, response.context['object_list'])
-        self.assertContains(response, self.note_author.title)
-        self.assertNotContains(response, self.note_reader.title)
+    def test_notes_list_for_different_users(self, author_client, reader_client, note_author,  notes_list_url):
+        """
+        Проверяем, что заметки отображаются только для их авторов.
+        """
+        test_cases = [
+            (author_client, True),
+            (reader_client, False),
+        ]
 
-    def test_pages_contains_form(self):
-        self.client.force_login(self.author)
-        form_urls = (
-            ('notes:add', ()),
-            ('notes:edit', (self.note_author.slug,))
-        )
-        for name, args in form_urls:
-            with self.subTest(name=name):
-                response = self.client.get(reverse(name, args=args))
+        for client, expected_result in test_cases:
+            with self.subTest(client=client, expected_result=expected_result):
+                response = client.get(notes_list_url)
+                object_list = response.context['object_list']
+                self.assertIs(
+                    note_author in object_list, expected_result,
+                    f'Заметка автора {"должна" if expected_result else "не должна"} быть в списке.'
+                )
+
+    def test_pages_contains_form(self, author_client, note_author, add_note_url, edit_note_url):
+        """
+        Проверяем, что на страницах добавления и редактирования заметки
+        присутствует форма.
+        """
+        form_urls = [
+            (add_note_url, None),
+            (edit_note_url, (note_author.slug,)),
+        ]
+
+        for url, args in form_urls:
+            with self.subTest(url=url):
+                response = author_client.get(url)
                 self.assertIn('form', response.context)
                 self.assertIsInstance(response.context['form'], NoteForm)
