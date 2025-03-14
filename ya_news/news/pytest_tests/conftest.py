@@ -2,6 +2,7 @@ from datetime import timedelta
 
 import pytest
 
+from django.utils import timezone
 from django.conf import settings
 from django.test.client import Client
 from django.utils import timezone

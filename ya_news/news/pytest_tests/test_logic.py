@@ -6,7 +6,7 @@ from django.urls import reverse
 from pytest_django.asserts import assertRedirects, assertFormError
 
 from news.models import Comment
-from news.forms import BAD_WORDS, WARNING
+from news.forms import WARNING
 
 
 @pytest.fixture
@@ -44,7 +44,6 @@ def test_user_can_create_comment(not_author, not_author_client, news,
     assert comment.author == not_author
 
 
-@pytest.mark.parametrize('bad_word', BAD_WORDS)
 @pytest.mark.django_db
 def test_user_cant_use_bad_words(author_client, news_detail_url, bad_word):
     """Форма отклоняет комментарии с запрещёнными словами."""
@@ -53,6 +52,7 @@ def test_user_cant_use_bad_words(author_client, news_detail_url, bad_word):
         data={'text': f'Какой-то текст, {bad_word}, ещё текст'}
     )
     form = response.context['form']
+    # Добавляем проверку ошибки на поле 'text' формы
     assertFormError(form, field='text', errors=WARNING)
     assert Comment.objects.count() == 0
 
