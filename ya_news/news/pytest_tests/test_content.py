@@ -41,9 +41,9 @@ def test_order_comment_in_news(client, all_routes, news, create_comments):
 @pytest.mark.parametrize(
     'name, have_form',
     [
-        (pytest.lazy_fixture('not_author_client'), True),  # пользователь
-        (pytest.lazy_fixture('author_client'), True),  # автор
-        (pytest.lazy_fixture('client'), False)  # анонимный
+        (pytest.lazy_fixture('not_author_client'), True),
+        (pytest.lazy_fixture('author_client'), True),
+        (pytest.lazy_fixture('client'), False)
     ]
 )
 def test_contains_form_user_and_anonymous(name, all_routes, news, have_form):

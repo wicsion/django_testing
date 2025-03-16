@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 
-
 import pytest
 from django.test.client import Client
 from django.conf import settings
@@ -34,14 +33,14 @@ def author_client(author):
 def not_author_client(not_author):
     """Фикстура залогиненного юзера."""
     client = Client()
-    client.force_login(not_author)  # Логиним обычного пользователя в клиенте.
+    client.force_login(not_author)
     return client
 
 
 @pytest.fixture
 def news(author):
     """Фикстура новости."""
-    news = News.objects.create(  # Создаём объект заметки.
+    news = News.objects.create(
         title='Заголовок',
         text='Текст заметки',
     )
