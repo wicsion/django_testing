@@ -1,11 +1,9 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import pytest
-
-from django.utils import timezone
-from django.conf import settings
 from django.test.client import Client
 from django.utils import timezone
+from django.conf import settings
 from django.urls import reverse
 
 from news.models import News, Comment
@@ -48,20 +46,20 @@ def comment(author, news, db):
     return Comment.objects.create(
         news=news,
         author=author,
-        text='Текст комментария',
+        text='Текст комментария'
     )
 
 
 @pytest.fixture
 def create_news(db):
-    now = timezone.now()
+    today = datetime.today()
+    news_count = settings.NEWS_COUNT_ON_HOME_PAGE
     all_news = [
         News(
             title=f'Заголовок {index + 1}',
             text=f'Текст заметки {index + 1}',
-            date=now - timedelta(days=index),
-        )
-        for index in range(settings.NEWS_COUNT_ON_HOME_PAGE)
+            date=today - timedelta(days=index)
+        ) for index in range(news_count)
     ]
     News.objects.bulk_create(all_news)
 
@@ -73,7 +71,7 @@ def create_comments(author, news, db):
         comment = Comment.objects.create(
             news=news,
             author=author,
-            text=f'Текст комментария {index}',
+            text=f'Текст комментария {index}'
         )
         comment.created = now + timedelta(days=index)
         comment.save()
@@ -87,15 +85,45 @@ def comment_data():
 
 
 @pytest.fixture
+def home_url():
+    return reverse('news:home')
+
+
+@pytest.fixture
 def news_detail_url(news):
     return reverse('news:detail', args=(news.id,))
 
 
 @pytest.fixture
-def delete_url(comment):
-    return reverse('news:delete', args=(comment.id,))
+def detail_url(news):
+    return reverse('news:detail', args=(news.id,))
 
 
 @pytest.fixture
-def edit_url(comment):
-    return reverse('news:edit', args=(comment.id,))
+def login_url():
+    return reverse('users:login')
+
+
+@pytest.fixture
+def logout_url():
+    return reverse('users:logout')
+
+
+@pytest.fixture
+def signup_url():
+    return reverse('users:signup')
+
+
+@pytest.fixture
+def list_url():
+    return reverse('notes:list')
+
+
+@pytest.fixture
+def add_url():
+    return reverse('notes:add')
+
+
+@pytest.fixture
+def edit_url(note_author):
+    return reverse('notes:edit', args=(note_author.slug,))

@@ -1,35 +1,29 @@
-from django.contrib.auth import get_user_model
-from django.urls import reverse
+import pytest
 
-from notes.tests.test_routes import TestFixtures
 from notes.forms import NoteForm
 
 
-User = get_user_model()
+@pytest.mark.django_db
+class TestFormPage:
+    """Тесты отображения форм и списка заметок для разных пользователей."""
 
-
-class TestFormPage(TestFixtures):
-
-    def test_notes_list_for_different_users(self):
-        self.client.force_login(self.author)
-        response = self.client.get(reverse('notes:list'))
-        self.assertIn(self.note_author, response.context['object_list'])
-        self.assertContains(response, self.note_author.title)
-        self.assertNotContains(response, self.note_reader.title)
-        self.client.force_login(self.reader)
-        response = self.client.get(reverse('notes:list'))
-        self.assertIn(self.note_reader, response.context['object_list'])
-        self.assertContains(response, self.note_reader.title)
-        self.assertNotContains(response, self.note_author.title)
-
-    def test_pages_contains_form(self):
-        self.client.force_login(self.author)
-        form_urls = (
-            ('notes:add', ()),
-            ('notes:edit', (self.note_author.slug,))
+    def test_notes_list_for_different_users(
+        self, author_client, reader_client, note_author, list_url
+    ):
+        """Заметка должна отображаться только автору в списке object_list."""
+        test_cases = (
+            (author_client, True),
+            (reader_client, False),
         )
-        for name, args in form_urls:
-            with self.subTest(name=name):
-                response = self.client.get(reverse(name, args=args))
-                self.assertIn('form', response.context)
-                self.assertIsInstance(response.context['form'], NoteForm)
+        for client, expected in test_cases:
+            with client:
+                response = client.get(list_url)
+                note_in_list = note_author in response.context['object_list']
+                assert note_in_list is expected
+
+    def test_pages_contains_form(self, author_client, add_url, edit_url):
+        """На страницах добавления и редактирования отображается форма."""
+        for url in (add_url, edit_url):
+            response = author_client.get(url)
+            assert 'form' in response.context
+            assert isinstance(response.context['form'], NoteForm)

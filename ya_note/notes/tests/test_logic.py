@@ -7,74 +7,104 @@ from pytils.translit import slugify
 from notes.models import Note
 from notes.tests.test_routes import TestFixtures
 
-
 User = get_user_model()
-
-NOTE_DATA = {
-    'title': 'Новая заметка',
-    'text': 'Новый текст'
-}
 
 
 class TestLogic(TestFixtures):
 
     def test_not_unique_slug(self):
-        """Проверяем, что при дублировании слага выводится ошибка формы."""
         self.client.force_login(self.author)
-        new_note = {
-            'title': 'Заметка автора',
-            'text': 'Новый текст'
+        note_count_before = Note.objects.count()
+        form_data = {
+            'title': self.note_author.title,
+            'text': 'Повторный текст',
+            'slug': self.note_author.slug,
         }
-        slug = slugify('Заметка автора')
-        response = self.client.post(reverse('notes:add'), data=new_note)
+        response = self.client.post(reverse('notes:add'), data=form_data)
         self.assertFormError(
             response,
             'form',
             'slug',
-            f'{slug} - такой slug существует, придумайте уникальное значение!'
+            errors='Заметка с таким slug существует, придумайте значение!'
         )
+        assert Note.objects.count() == note_count_before
 
     def test_slug_automatic_generation(self):
-        """Проверяем автоматическую генерацию слага."""
-        self.assertEqual(
-            self.note_author.slug,
-            slugify(self.note_author.title)
-        )
+        Note.objects.all().delete()
+        self.client.force_login(self.author)
+        form_data = {
+            'title': 'Автогенерация',
+            'text': 'Текст для автослага',
+        }
+        self.client.post(reverse('notes:add'), data=form_data)
+        note = Note.objects.get()
+        assert note.slug == slugify(form_data['title'])
 
     def test_note_creation_with_author(self):
-        """Проверяем, что заметка создается с правильным автором."""
+        Note.objects.all().delete()
         self.client.force_login(self.reader)
-        self.client.post(reverse('notes:add'), NOTE_DATA)
-        self.assertEqual(Note.objects.count(), 3)
-        new_note = Note.objects.get(title='Новая заметка')
-        self.assertEqual(new_note.author, self.reader)
+        form_data = {
+            'title': 'Новая заметка',
+            'text': 'Новый текст',
+            'slug': 'new-slug',
+        }
+        self.client.post(reverse('notes:add'), data=form_data)
+        note = Note.objects.get()
+        assert note.title == form_data['title']
+        assert note.text == form_data['text']
+        assert note.slug == form_data['slug']
+        assert note.author == self.reader
 
     def test_anonymous_user_cant_create_note(self):
-        """Проверяем, что анонимный пользователь не может создать заметку."""
-        self.client.post(reverse('notes:add'), NOTE_DATA)
-        self.assertEqual(Note.objects.count(), 2)
+        note_count_before = Note.objects.count()
+        form_data = {
+            'title': 'Анонимная',
+            'text': 'Текст',
+            'slug': 'anonymous',
+        }
+        self.client.post(reverse('notes:add'), data=form_data)
+        assert Note.objects.count() == note_count_before
 
-    def test_user_permissions_for_editing_and_deleting_notes(self):
-        """Проверяем права пользователей на редактирование."""
-        test_cases = (
-            (self.reader, 'delete', HTTPStatus.NOT_FOUND),
-            (self.reader, 'edit', HTTPStatus.NOT_FOUND),
-            (self.author, 'edit', HTTPStatus.OK),
-            (self.author, 'delete', HTTPStatus.FOUND),
-        )
-        for user, action, expected_status in test_cases:
-            with self.subTest(user=user, action=action):
-                self.client.force_login(user)
+    def test_author_can_edit_note(self):
+        self.client.force_login(self.author)
+        url = reverse('notes:edit', args=(self.note_author.slug,))
+        form_data = {
+            'title': 'Обновление заголовка',
+            'text': 'Новый текст',
+            'slug': self.note_author.slug,
+        }
+        self.client.post(url, data=form_data)
+        self.note_author.refresh_from_db()
+        assert self.note_author.title == form_data['title']
+        assert self.note_author.text == form_data['text']
 
-                if action == 'delete':
-                    url = reverse(
-                        'notes:delete',
-                        args=(self.note_author.slug,)
-                    )
-                elif action == 'edit':
-                    url = reverse('notes:edit', args=(self.note_author.slug,))
+    def test_reader_cant_edit_note(self):
+        self.client.force_login(self.reader)
+        url = reverse('notes:edit', args=(self.note_author.slug,))
+        old_note = Note.objects.get(pk=self.note_author.pk)
+        form_data = {
+            'title': 'Попытка редактирования',
+            'text': 'Новый текст',
+            'slug': self.note_author.slug,
+        }
+        response = self.client.post(url, data=form_data)
+        assert response.status_code == HTTPStatus.NOT_FOUND
+        updated_note = Note.objects.get(pk=self.note_author.pk)
+        assert updated_note.title == old_note.title
+        assert updated_note.text == old_note.text
 
-                self.assertEqual(
-                    self.client.post(url).status_code,
-                    expected_status
-                )
+    def test_author_can_delete_note(self):
+        note_count_before = Note.objects.count()
+        self.client.force_login(self.author)
+        url = reverse('notes:delete', args=(self.note_author.slug,))
+        response = self.client.post(url)
+        assert response.status_code == HTTPStatus.FOUND
+        assert Note.objects.count() == note_count_before - 1
+
+    def test_reader_cant_delete_note(self):
+        note_count_before = Note.objects.count()
+        self.client.force_login(self.reader)
+        url = reverse('notes:delete', args=(self.note_author.slug,))
+        response = self.client.post(url)
+        assert response.status_code == HTTPStatus.NOT_FOUND
+        assert Note.objects.count() == note_count_before
