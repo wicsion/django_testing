@@ -4,12 +4,11 @@ from django.urls import reverse_lazy
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-yipnj$#j!ajarq%k55z4kuf3x79)91h0h42o9!1ho(z=!%mt=#'
+SECRET_KEY = 'django-insecure-7)dgs++2!#==aye4rd=5)c)bw0eokiyqx0hts6#t80!$c&$s+('
 
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['*']
-
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -18,7 +17,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'notes.apps.NotesConfig'
+    'news.apps.NewsConfig',
 ]
 
 MIDDLEWARE = [
@@ -31,7 +30,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'yanote.urls'
+ROOT_URLCONF = 'yanews.urls'
 
 TEMPLATES = [
     {
@@ -49,7 +48,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'yanote.wsgi.application'
+WSGI_APPLICATION = 'yanews.wsgi.application'
 
 
 DATABASES = {
@@ -60,14 +59,7 @@ DATABASES = {
 }
 
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
+AUTH_PASSWORD_VALIDATORS = []
 
 
 LANGUAGE_CODE = 'ru'
@@ -80,10 +72,11 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = reverse_lazy('users:login')
-LOGIN_REDIRECT_URL = reverse_lazy('notes:home')
+LOGIN_REDIRECT_URL = reverse_lazy('news:home')
+
+NEWS_COUNT_ON_HOME_PAGE = 10

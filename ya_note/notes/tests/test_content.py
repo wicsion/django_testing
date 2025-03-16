@@ -1,29 +1,42 @@
-import pytest
+from django.contrib.auth import get_user_model
 
 from notes.forms import NoteForm
+from .test_fixtures import BaseTestSetUp
 
 
-@pytest.mark.django_db
-class TestFormPage:
-    """Тесты отображения форм и списка заметок для разных пользователей."""
+User = get_user_model()
 
-    def test_notes_list_for_different_users(
-        self, author_client, reader_client, note_author, list_url
-    ):
-        """Заметка должна отображаться только автору в списке object_list."""
-        test_cases = (
-            (author_client, True),
-            (reader_client, False),
+
+class TestHomePage(BaseTestSetUp):
+    """Класс тестов контента."""
+
+    def test_context_in_list(self):
+        """Отдельная заметка попадает на страницу заметок."""
+        response = self.author_client.get(self.urls['list'])
+        self.assertIn(self.notes, response.context['object_list'])
+
+    def test_other_notes_others_users(self):
+        """Чужие заметки не попадают к юзеру."""
+        response = self.user_client.get(self.urls['list'])
+        self.assertNotIn(self.notes, response.context['object_list'])
+
+    def test_form_pages(self):
+        """Тест формы на страницах добавления и редактирования заметок."""
+        test_urls = (
+            self.urls['add'],
+            self.urls['edit'],
         )
-        for client, expected in test_cases:
-            with client:
-                response = client.get(list_url)
-                note_in_list = note_author in response.context['object_list']
-                assert note_in_list is expected
-
-    def test_pages_contains_form(self, author_client, add_url, edit_url):
-        """На страницах добавления и редактирования отображается форма."""
-        for url in (add_url, edit_url):
-            response = author_client.get(url)
-            assert 'form' in response.context
-            assert isinstance(response.context['form'], NoteForm)
+        for url in test_urls:
+            response = self.author_client.get(url)
+            with self.subTest('Проверка наличия формы'):
+                self.assertIn(
+                    'form',
+                    response.context,
+                    f'Форма на странице {url} не найдена.'
+                )
+            with self.subTest('Проверка типа формы.'):
+                self.assertIsInstance(
+                    response.context['form'],
+                    NoteForm,
+                    'Форма не является экземпляром NoteForm.'
+                )
