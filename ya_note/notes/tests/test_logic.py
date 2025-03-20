@@ -31,23 +31,23 @@ class TestNoteCreate(BaseTestSetUp):
 
     def test_auto_slug_creation(self):
         """Тест, что slug создается автоматически, если не заполнен."""
+        Note.objects.all().delete()
         self.form_data.pop('slug')
-        response = self.user_client.post(self.urls['add'],
-                                         data=self.form_data)
+        response = self.user_client.post(self.urls['add'], data=self.form_data)
         self.assertRedirects(response, self.urls['success'])
         note = Note.objects.get()
         self.assertTrue(note.slug)
 
     def test_unique_slug(self):
         """Тест, что невозможно создать две заметки с одинаковым slug."""
+        Note.objects.all().delete()
         self.user_client.post(self.urls['add'], data=self.form_data)
-        response = self.user_client.post(self.urls['add'],
-                                         data=self.form_data)
+        response = self.user_client.post(self.urls['add'], data=self.form_data)
         self.assertFormError(
             response,
             'form',
             'slug',
-            'novaya-zametka',
+            'novaya-zametka - такой slug уже существует, придумайте уникальное значение!'
         )
 
 
