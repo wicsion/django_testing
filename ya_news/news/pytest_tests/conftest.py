@@ -101,3 +101,8 @@ def edit_url(comment):
 @pytest.fixture
 def delete_url(comment):
     return reverse('news:delete', args=(comment.pk,))
+
+
+@pytest.fixture
+def login_url():
+    return reverse('users:login')
