@@ -8,18 +8,21 @@ User = get_user_model()
 class TestHomePage(BaseTestSetUp):
     """Класс тестов контента."""
 
-    def test_context_in_list(self):
-        """Отдельная заметка передаётся на страницу со списком заметок."""
-        test_data = (
+    def test_notes_in_list_and_other_users(self):
+        """Тест проверки наличия заметок в списке."""
+        test_cases = (
             (self.author_client, True),
             (self.user_client, False),
         )
-
-        for client, expected in test_data:
-            with self.subTest(client=client):
+        for client, expected_result in test_cases:
+            with self.subTest(client=client, expected_result=expected_result):
                 response = client.get(self.urls['list'])
-                note_in_list = self.notes in response.context['object_list']
-                self.assertIs(note_in_list, expected)
+                self.assertIs(
+                    self.notes in response.context['object_list'],
+                    expected_result,
+                    f'Заметка '
+                    f'{"должна" if expected_result else "не должна"} быть .'
+                )
 
     def test_form_pages(self):
         """Тест формы на страницах добавления и редактирования заметок."""
@@ -27,18 +30,16 @@ class TestHomePage(BaseTestSetUp):
             self.urls['add'],
             self.urls['edit'],
         )
-
         for url in test_urls:
-            response = self.author_client.get(url)
-            with self.subTest(url=url, check='Проверка наличия формы'):
+            with self.subTest(url=url):
+                response = self.author_client.get(url)
                 self.assertIn(
                     'form',
                     response.context,
                     f'Форма на странице {url} не найдена.'
                 )
-            with self.subTest(url=url, check='Проверка типа формы'):
                 self.assertIsInstance(
                     response.context['form'],
                     NoteForm,
-                    f'Форма  {url} не является экземпляром NoteForm.'
+                    'Форма не является экземпляром NoteForm.'
                 )
