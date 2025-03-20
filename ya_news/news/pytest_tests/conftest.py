@@ -40,22 +40,20 @@ def not_author_client(not_author):
 @pytest.fixture
 def news(author):
     """Фикстура новости."""
-    news = News.objects.create(
+    return News.objects.create(
         title='Заголовок',
         text='Текст заметки',
     )
-    return news
 
 
 @pytest.fixture
 def comment(news, author):
-    """Фикстура коммента."""
-    comment = Comment.objects.create(
+    """Фикстура комментария."""
+    return Comment.objects.create(
         text='текст',
         news=news,
         author=author
     )
-    return comment
 
 
 @pytest.fixture
@@ -73,7 +71,7 @@ def create_news(db):
 
 @pytest.fixture
 def create_comments(news, author):
-    """Фикстура для создания нескольких комментов."""
+    """Фикстура для создания нескольких комментариев."""
     now = timezone.now()
     for index in range(5):
         comment = Comment.objects.create(
@@ -86,21 +84,20 @@ def create_comments(news, author):
 
 
 @pytest.fixture
-def routes_for_paginator():
-    return {
-        'home': reverse('news:home')
-    }
+def home_url():
+    return reverse('news:home')
 
 
 @pytest.fixture
-def all_routes(news, comment):
-    """Фикстура всех адресов."""
-    return {
-        'home': reverse('news:home'),
-        'detail': reverse('news:detail', args=(news.pk,)),
-        'edit': reverse('news:edit', args=(comment.id,)),
-        'delete': reverse('news:delete', args=(comment.id,)),
-        'login': reverse('users:login'),
-        'logout': reverse('users:logout'),
-        'signup': reverse('users:signup'),
-    }
+def detail_url(news):
+    return reverse('news:detail', args=(news.pk,))
+
+
+@pytest.fixture
+def edit_url(comment):
+    return reverse('news:edit', args=(comment.pk,))
+
+
+@pytest.fixture
+def delete_url(comment):
+    return reverse('news:delete', args=(comment.pk,))

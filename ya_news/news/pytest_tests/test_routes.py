@@ -3,40 +3,46 @@ from http import HTTPStatus
 import pytest
 from django.test.client import Client
 from pytest_django.asserts import assertRedirects
-from pytest_lazyfixture import lazy_fixture as lf
-
 
 pytestmark = pytest.mark.django_db
 
 CLIENT = Client()
 HTTP_OK = HTTPStatus.OK
 HTTP_NOT_FOUND = HTTPStatus.NOT_FOUND
-NOT_AUTHOR_CLIENT = lf('not_author_client')
-AUTHOR_CLIENT = lf('author_client')
+
+
+@pytest.mark.parametrize('name', ['home', 'login',
+                                  'logout', 'signup', 'detail'])
+def test_pages_available_for_anonymous(name, all_routes):
+    """Доступные страницы для анонимного пользователя."""
+    url = all_routes[name]
+    response = CLIENT.get(url)
+    assert response.status_code == HTTP_OK
 
 
 @pytest.mark.parametrize(
-    'name, user_client, expected_status',
+    'name, client_fixture, expected_status',
     [
-        ('home', CLIENT, HTTP_OK),
-        ('login', CLIENT, HTTP_OK),
-        ('logout', CLIENT, HTTP_OK),
-        ('signup', CLIENT, HTTP_OK),
-        ('detail', CLIENT, HTTP_OK),
-        ('edit', NOT_AUTHOR_CLIENT, HTTP_NOT_FOUND),
-        ('delete', AUTHOR_CLIENT, HTTP_OK),
+        ('edit', 'not_author_client', HTTP_NOT_FOUND),
+        ('delete', 'not_author_client', HTTP_NOT_FOUND),
+        ('edit', 'author_client', HTTP_OK),
+        ('delete', 'author_client', HTTP_OK),
     ]
 )
-def test_anonymous_user_access(name, user_client, expected_status, all_routes):
-    """Тест доступности страниц для анонимного пользователя."""
+def test_permissions_for_author_and_not_author(name, client_fixture,
+                                               expected_status,
+                                               all_routes, request):
+    """Проверка прав доступа для авторов и неавторов."""
+    client = request.getfixturevalue(client_fixture)
     url = all_routes[name]
-    response = user_client.get(url)
+    response = client.get(url)
     assert response.status_code == expected_status
 
 
-def test_redirect_anonymous_cant_edit_and_del_comment(client, all_routes):
-    """Редирект анонима на страницу авторизации."""
-    url = all_routes['edit']
+@pytest.mark.parametrize('name', ['edit', 'delete'])
+def test_anonymous_redirects_to_login(client, name, all_routes):
+    """Анонимный пользователь перенаправляется на страницу логина."""
+    url = all_routes[name]
     login_url = all_routes['login']
     expected_url = f'{login_url}?next={url}'
     response = client.get(url)
