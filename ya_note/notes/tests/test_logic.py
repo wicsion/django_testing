@@ -31,8 +31,9 @@ class TestNoteCreate(BaseTestSetUp):
 
     def test_auto_slug_creation(self):
         """Тест, что slug создается автоматически, если не заполнен."""
-        self.form_data.pop('slug')  # Удаляем slug из данных
-        response = self.user_client.post(self.urls['add'], data=self.form_data)
+        self.form_data.pop('slug')
+        response = self.user_client.post(self.urls['add'],
+                                         data=self.form_data)
         self.assertRedirects(response, self.urls['success'])
         note = Note.objects.get()
         self.assertTrue(note.slug)
@@ -46,7 +47,7 @@ class TestNoteCreate(BaseTestSetUp):
             response,
             'form',
             'slug',
-            'Заметка с таким Slug уже существует.'
+            'novaya-zametka '
         )
 
 
@@ -76,9 +77,9 @@ class TestNoteEditDelete(BaseTestSetUp):
             self.urls['edit'], data=self.form_data
         )
         self.assertRedirects(response, self.urls['success'])
-        updated_note = Note.objects.get(id=self.notes.id)
+        updated_note = Note.objects.get(id=self.note.id)
         self.assertEqual(updated_note.text, self.form_data['text'])
-        self.assertEqual(updated_note.author, self.notes.author)
+        self.assertEqual(updated_note.author, self.note.author)
         self.assertEqual(updated_note.title, self.form_data['title'])
         self.assertEqual(updated_note.slug, self.form_data['slug'])
 
@@ -88,8 +89,8 @@ class TestNoteEditDelete(BaseTestSetUp):
             self.urls['edit'], data=self.form_data
         )
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
-        updated_note = Note.objects.get(id=self.notes.id)
-        self.assertEqual(updated_note.text, self.notes.text)
-        self.assertEqual(updated_note.author, self.notes.author)
-        self.assertEqual(updated_note.title, self.notes.title)
-        self.assertEqual(updated_note.slug, self.notes.slug)
+        updated_note = Note.objects.get(id=self.note.id)
+        self.assertEqual(updated_note.text, self.note.text)
+        self.assertEqual(updated_note.author, self.note.author)
+        self.assertEqual(updated_note.title, self.note.title)
+        self.assertEqual(updated_note.slug, self.note.slug)

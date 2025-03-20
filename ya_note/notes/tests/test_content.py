@@ -18,7 +18,7 @@ class TestHomePage(BaseTestSetUp):
             with self.subTest(client=client, expected_result=expected_result):
                 response = client.get(self.urls['list'])
                 self.assertIs(
-                    self.notes in response.context['object_list'],
+                    self.note in response.context['object_list'],
                     expected_result,
                     f'Заметка '
                     f'{"должна" if expected_result else "не должна"} быть .'
