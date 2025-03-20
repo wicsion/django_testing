@@ -47,7 +47,8 @@ class TestNoteCreate(BaseTestSetUp):
             response,
             'form',
             'slug',
-            'novaya-zametka - такой slug уже существует, придумайте уникальное значение!'
+            'novaya-zametka - '
+            'такой slug уже существует, придумайте уникальное значение!'
         )
 
 
