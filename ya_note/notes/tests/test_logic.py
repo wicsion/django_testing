@@ -3,7 +3,7 @@ from http import HTTPStatus
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
 from notes.models import Note
-from .test_fixtures import BaseTestSetUp
+from .fixtures import BaseTestSetUp
 
 User = get_user_model()
 

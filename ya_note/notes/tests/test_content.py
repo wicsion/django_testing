@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from notes.forms import NoteForm
-from .test_fixtures import BaseTestSetUp
+from .fixtures import BaseTestSetUp
 
 User = get_user_model()
 
