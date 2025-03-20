@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
-from django.utils.text import slugify
 from django.test import Client
 
 from notes.models import Note
@@ -9,7 +8,6 @@ from notes.models import Note
 
 class BaseTestSetUp(TestCase):
     """Базовая фикстура для всех тестов."""
-    NOTE_TEXT = 'текст'
 
     @classmethod
     def setUpTestData(cls):
@@ -21,25 +19,21 @@ class BaseTestSetUp(TestCase):
         cls.notes = Note.objects.create(
             title='Название заметки',
             text='Подробности',
-            slug=slugify('Заголовок'),
+            slug='zagolovok',
             author=cls.author
         )
-        cls.urls = {
-            'list': reverse('notes:list'),
-            'add': reverse('notes:add'),
-            'success': reverse('notes:success'),
-            'detail': reverse('notes:detail', args=(cls.notes.slug,)),
-            'edit': reverse('notes:edit', args=(cls.notes.slug,)),
-            'delete': reverse('notes:delete', args=(cls.notes.slug,)),
-        }
-        cls.auth_and_home_urls = {
-            'home': reverse('notes:home'),
-            'login': reverse('users:login'),
-            'logout': reverse('users:logout'),
-            'signup': reverse('users:signup'),
-        }
+        cls.list_url = reverse('notes:list')
+        cls.add_url = reverse('notes:add')
+        cls.success_url = reverse('notes:success')
+        cls.detail_url = reverse('notes:detail', args=(cls.notes.slug,))
+        cls.edit_url = reverse('notes:edit', args=(cls.notes.slug,))
+        cls.delete_url = reverse('notes:delete', args=(cls.notes.slug,))
+        cls.home_url = reverse('notes:home')
+        cls.login_url = reverse('users:login')
+        cls.logout_url = reverse('users:logout')
+        cls.signup_url = reverse('users:signup')
         cls.form_data = {
-            'text': cls.NOTE_TEXT,
+            'text': 'текст',
             'title': 'title',
             'slug': 'slug',
         }

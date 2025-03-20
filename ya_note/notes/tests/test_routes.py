@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
 
-from .test_fixtures import BaseTestSetUp
+from .fixtures import BaseTestSetUp
 
 
 User = get_user_model()
