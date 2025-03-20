@@ -7,16 +7,18 @@ from notes.models import Note
 
 
 class BaseTestSetUp(TestCase):
-    """Базовая фикстура для всех тестов."""
+    """Базовая настройка для всех тестов."""
 
     @classmethod
     def setUpTestData(cls):
         cls.author = User.objects.create(username='Author')
         cls.user = User.objects.create(username='Reader')
-        cls.author_client, cls.user_client = Client(), Client()
+        cls.author_client = Client()
+        cls.user_client = Client()
         cls.author_client.force_login(cls.author)
         cls.user_client.force_login(cls.user)
-        cls.notes = Note.objects.create(
+
+        cls.note = Note.objects.create(
             title='Название заметки',
             text='Подробности',
             slug='zagolovok',
@@ -25,15 +27,9 @@ class BaseTestSetUp(TestCase):
         cls.list_url = reverse('notes:list')
         cls.add_url = reverse('notes:add')
         cls.success_url = reverse('notes:success')
-        cls.detail_url = reverse('notes:detail', args=(cls.notes.slug,))
-        cls.edit_url = reverse('notes:edit', args=(cls.notes.slug,))
-        cls.delete_url = reverse('notes:delete', args=(cls.notes.slug,))
-        cls.home_url = reverse('notes:home')
+        cls.detail_url = reverse('notes:detail', args=(cls.note.slug,))
+        cls.edit_url = reverse('notes:edit', args=(cls.note.slug,))
+        cls.delete_url = reverse('notes:delete', args=(cls.note.slug,))
         cls.login_url = reverse('users:login')
         cls.logout_url = reverse('users:logout')
         cls.signup_url = reverse('users:signup')
-        cls.form_data = {
-            'text': 'текст',
-            'title': 'title',
-            'slug': 'slug',
-        }
