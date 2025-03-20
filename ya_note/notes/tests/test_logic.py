@@ -47,7 +47,7 @@ class TestNoteCreate(BaseTestSetUp):
             response,
             'form',
             'slug',
-            'novaya-zametka '
+            'novaya-zametka',
         )
 
 
