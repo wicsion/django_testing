@@ -11,10 +11,10 @@ class TestRoutes(BaseTestSetUp):
     def test_home_and_auth_pages(self):
         """Тест главной страницы и страниц авторизации."""
         urls_to_test = (
-            self.home_url,
-            self.login_url,
-            self.logout_url,
-            self.signup_url,
+            self.auth_and_home_urls['home'],
+            self.auth_and_home_urls['login'],
+            self.auth_and_home_urls['logout'],
+            self.auth_and_home_urls['signup'],
         )
         for url in urls_to_test:
             with self.subTest(url=url):
@@ -28,9 +28,9 @@ class TestRoutes(BaseTestSetUp):
             (self.user_client, HTTPStatus.NOT_FOUND),
         )
         urls_to_test = (
-            self.detail_url,
-            self.edit_url,
-            self.delete_url,
+            self.urls['detail'],
+            self.urls['edit'],
+            self.urls['delete'],
         )
         for client, status in users_status:
             for url in urls_to_test:
@@ -41,9 +41,9 @@ class TestRoutes(BaseTestSetUp):
     def test_list_add_done_pages(self):
         """Тест страниц списка заметок, добавления и успешного добавления."""
         urls_to_test = (
-            self.list_url,
-            self.add_url,
-            self.success_url,
+            self.urls['list'],
+            self.urls['add'],
+            self.urls['success'],
         )
         for url in urls_to_test:
             with self.subTest(url=url):
@@ -52,14 +52,14 @@ class TestRoutes(BaseTestSetUp):
 
     def test_redirect_anonymous_user(self):
         """Тест на редирект анонимного пользователя."""
-        login_url = self.login_url
+        login_url = self.auth_and_home_urls['login']
         urls_to_test = (
-            self.list_url,
-            self.add_url,
-            self.success_url,
-            self.detail_url,
-            self.edit_url,
-            self.delete_url,
+            self.urls['list'],
+            self.urls['add'],
+            self.urls['success'],
+            self.urls['detail'],
+            self.urls['edit'],
+            self.urls['delete'],
         )
         for url in urls_to_test:
             with self.subTest(url=url):
