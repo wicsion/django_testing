@@ -17,19 +17,19 @@ class TestHomePage(BaseTestSetUp):
         )
         for client, expected_result in test_cases:
             with self.subTest(client=client, expected_result=expected_result):
-                response = client.get(self.urls['list'])
+                response = client.get(self.list_url)
                 self.assertIs(
                     self.note in response.context['object_list'],
                     expected_result,
                     'Заметка '
-                    f'{"должна" if expected_result else "не должна"} быть .'
+                    f'{"должна" if expected_result else "не должна"} быть.'
                 )
 
     def test_form_pages(self):
         """Тест формы на страницах добавления и редактирования заметок."""
         test_urls = (
-            self.urls['add'],
-            self.urls['edit'],
+            self.add_url,
+            self.edit_url,
         )
         for url in test_urls:
             with self.subTest(url=url):
