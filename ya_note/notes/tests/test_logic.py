@@ -1,8 +1,12 @@
 from http import HTTPStatus
+
 from django.contrib.auth import get_user_model
-from notes.models import Note
-from .fixtures import BaseTestSetUp
 from pytils.translit import slugify
+
+from notes.models import Note
+from notes.forms import WARNING
+from .fixtures import BaseTestSetUp
+
 
 User = get_user_model()
 
@@ -38,28 +42,19 @@ class TestNoteCreate(BaseTestSetUp):
         self.assertRedirects(response, self.success_url)
 
         note = Note.objects.get()
-        self.assertTrue(note.slug)
         expected_slug = slugify(self.form_data['title'])
         self.assertEqual(note.slug, expected_slug)
 
     def test_unique_slug(self):
         """Тест, что невозможно создать две заметки с одинаковым slug."""
-        Note.objects.all().delete()
-
-        Note.objects.create(
-            title=self.form_data['title'],
-            text=self.form_data['text'],
-            slug=self.form_data['slug'],
-            author=self.user
-        )
+        self.form_data['slug'] = self.note.slug
 
         response = self.user_client.post(self.add_url, data=self.form_data)
         self.assertFormError(
             response,
             'form',
             'slug',
-            f'{self.form_data["slug"]} - '
-            f'такой slug уже существует, придумайте уникальное значение!'
+            f'{self.note.slug} - {WARNING}'
         )
 
 

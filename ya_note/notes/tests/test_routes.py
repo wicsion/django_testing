@@ -1,6 +1,9 @@
 from http import HTTPStatus
+
 from django.contrib.auth import get_user_model
+
 from .fixtures import BaseTestSetUp
+
 
 User = get_user_model()
 
