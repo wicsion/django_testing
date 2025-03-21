@@ -1,7 +1,6 @@
 from http import HTTPStatus
 
 import pytest
-from django.urls import reverse
 from pytest_django.asserts import assertRedirects
 
 pytestmark = pytest.mark.django_db
@@ -18,7 +17,7 @@ pytestmark = pytest.mark.django_db
     ]
 )
 def test_pages_available_for_anonymous(client, url_fixture):
-    """Страницы, доступные анонимному пользователю."""
+    """Проверка доступности публичных страниц для анонимного пользователя."""
     response = client.get(url_fixture)
     assert response.status_code == HTTPStatus.OK
 
@@ -38,7 +37,10 @@ def test_pages_available_for_anonymous(client, url_fixture):
 )
 def test_permissions_for_author_and_not_author(name, client_fixture,
                                                url_fixture, expected_status):
-    """Проверка прав доступа к редактированию и удалению комментариев."""
+    """Проверка доступа к редактированию и удалению комментариев:
+    - автору доступно;
+    - неавтору — 404.
+    """
     response = client_fixture.get(url_fixture)
     assert response.status_code == expected_status
 
@@ -50,9 +52,8 @@ def test_permissions_for_author_and_not_author(name, client_fixture,
         pytest.lazy_fixture('delete_url'),
     ]
 )
-def test_anonymous_redirects_to_login(client, url_fixture):
-    """Анонимный пользователь перенаправляется на страницу логина."""
-    login_url = reverse('users:login')
-    expected_url = f'{login_url}?next={url_fixture}'
+def test_anonymous_redirects_to_login(client, url_fixture, login_url):
+    """Анонимный пользователь должен быть перенаправлен на логин."""
+    expected_redirect = f'{login_url}?next={url_fixture}'
     response = client.get(url_fixture)
-    assertRedirects(response, expected_url)
+    assertRedirects(response, expected_redirect)

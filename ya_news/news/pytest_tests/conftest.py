@@ -116,3 +116,15 @@ def login_url():
 def form_data():
     """Возвращает словарь с данными для формы комментария."""
     return {'text': 'Тестовый комментарий'}
+
+
+@pytest.fixture
+def logout_url():
+    """Фикстура для получения URL страницы выхода из системы."""
+    return reverse('users:logout')
+
+
+@pytest.fixture
+def signup_url():
+    """Фикстура для получения URL страницы регистрации."""
+    return reverse('users:signup')
