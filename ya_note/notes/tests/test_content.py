@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+
 from notes.forms import NoteForm
 from .fixtures import BaseTestSetUp
 
@@ -20,7 +21,7 @@ class TestHomePage(BaseTestSetUp):
                 self.assertIs(
                     self.note in response.context['object_list'],
                     expected_result,
-                    f'Заметка '
+                    'Заметка '
                     f'{"должна" if expected_result else "не должна"} быть .'
                 )
 
