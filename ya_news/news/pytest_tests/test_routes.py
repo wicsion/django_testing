@@ -25,13 +25,13 @@ def test_pages_available_for_anonymous(client, url_fixture):
 @pytest.mark.parametrize(
     'client_fixture, url_fixture, expected_status',
     [
-        ('edit', pytest.lazy_fixture('not_author_client'),
+        (pytest.lazy_fixture('not_author_client'),
          pytest.lazy_fixture('edit_url'), HTTPStatus.NOT_FOUND),
-        ('delete', pytest.lazy_fixture('not_author_client'),
+        (pytest.lazy_fixture('not_author_client'),
          pytest.lazy_fixture('delete_url'), HTTPStatus.NOT_FOUND),
-        ('edit', pytest.lazy_fixture('author_client'),
+        (pytest.lazy_fixture('author_client'),
          pytest.lazy_fixture('edit_url'), HTTPStatus.OK),
-        ('delete', pytest.lazy_fixture('author_client'),
+        (pytest.lazy_fixture('author_client'),
          pytest.lazy_fixture('delete_url'), HTTPStatus.OK),
     ]
 )
