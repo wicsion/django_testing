@@ -54,7 +54,7 @@ class TestNoteCreate(BaseTestSetUp):
             response,
             'form',
             'slug',
-            f'{self.note.slug} - {WARNING}'
+            f'{self.note.slug}  {WARNING}'
         )
 
 
