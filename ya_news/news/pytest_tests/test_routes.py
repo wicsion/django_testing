@@ -23,7 +23,7 @@ def test_pages_available_for_anonymous(client, url_fixture):
 
 
 @pytest.mark.parametrize(
-    'name, client_fixture, url_fixture, expected_status',
+    'client_fixture, url_fixture, expected_status',
     [
         ('edit', pytest.lazy_fixture('not_author_client'),
          pytest.lazy_fixture('edit_url'), HTTPStatus.NOT_FOUND),
@@ -35,7 +35,7 @@ def test_pages_available_for_anonymous(client, url_fixture):
          pytest.lazy_fixture('delete_url'), HTTPStatus.OK),
     ]
 )
-def test_permissions_for_author_and_not_author(name, client_fixture,
+def test_permissions_for_author_and_not_author(client_fixture,
                                                url_fixture, expected_status):
     """Проверка доступа к редактированию и удалению комментариев:
     - автору доступно;
