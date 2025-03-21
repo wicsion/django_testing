@@ -2,6 +2,7 @@ from http import HTTPStatus
 from django.contrib.auth import get_user_model
 from notes.models import Note
 from .fixtures import BaseTestSetUp
+from pytils.translit import slugify
 
 User = get_user_model()
 
@@ -35,20 +36,30 @@ class TestNoteCreate(BaseTestSetUp):
         self.form_data.pop('slug')
         response = self.user_client.post(self.add_url, data=self.form_data)
         self.assertRedirects(response, self.success_url)
+
         note = Note.objects.get()
         self.assertTrue(note.slug)
+        expected_slug = slugify(self.form_data['title'])
+        self.assertEqual(note.slug, expected_slug)
 
     def test_unique_slug(self):
         """Тест, что невозможно создать две заметки с одинаковым slug."""
         Note.objects.all().delete()
-        self.user_client.post(self.add_url, data=self.form_data)
+
+        Note.objects.create(
+            title=self.form_data['title'],
+            text=self.form_data['text'],
+            slug=self.form_data['slug'],
+            author=self.user
+        )
+
         response = self.user_client.post(self.add_url, data=self.form_data)
         self.assertFormError(
             response,
             'form',
             'slug',
-            'novaya-zametka - '
-            'такой slug уже существует, придумайте уникальное значение!'
+            f'{self.form_data["slug"]} - '
+            f'такой slug уже существует, придумайте уникальное значение!'
         )
 
 
@@ -73,7 +84,6 @@ class TestNoteEditDelete(BaseTestSetUp):
 
     def test_author_can_edit_note(self):
         """Тест на редактирование заметки."""
-        self.form_data['text'] = 'Обновлённый текст'
         response = self.author_client.post(self.edit_url, data=self.form_data)
         self.assertRedirects(response, self.success_url)
         updated_note = Note.objects.get(id=self.note.id)
