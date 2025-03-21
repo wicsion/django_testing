@@ -6,16 +6,11 @@ from pytest_django.asserts import assertRedirects, assertFormError
 from news.models import Comment
 from news.forms import BAD_WORDS, WARNING
 
-
 pytestmark = pytest.mark.django_db
 
 
-@pytest.fixture
-def form_data():
-    return {'text': 'Тестовый комментарий'}
-
-
-def test_cant_add_comment_anonymous(client, detail_url, login_url, form_data):
+def test_cant_add_comment_anonymous(client, detail_url,
+                                    login_url, form_data):
     """Анонимный пользователь не может отправить комментарий."""
     response = client.post(detail_url, data=form_data)
     expected_redirect = f'{login_url}?next={detail_url}'
@@ -54,25 +49,27 @@ def test_users_can_edit_comment(author_client, edit_url,
     assert updated_comment.news == comment.news
 
 
-def test_users_cant_edit_com(not_author_client, edit_url, comment, form_data):
+def test_users_cant_edit_com(not_author_client,
+                             edit_url, comment, form_data):
     """Пользователь не может редактировать чужой комментарий."""
     response = not_author_client.post(edit_url, form_data)
     assert response.status_code == HTTPStatus.NOT_FOUND
     comment_from_db = Comment.objects.get(id=comment.id)
     assert comment_from_db.text == comment.text
+    assert comment_from_db.author == comment.author
+    assert comment_from_db.news == comment.news
 
 
-def test_users_cant_delete_com(not_author_client, delete_url):
+def test_users_cant_delete_com(not_author_client, delete_url, comment):
     """Пользователь не может удалить чужой комментарий."""
-    comment_count_before = Comment.objects.count()
     response = not_author_client.post(delete_url)
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert Comment.objects.count() == comment_count_before
+    assert Comment.objects.filter(id=comment.id).exists()
 
 
-def test_authors_can_delete_com(author_client, delete_url, detail_url):
+def test_authors_can_delete_com(author_client,
+                                delete_url, detail_url, comment):
     """Автор может удалить свой комментарий."""
-    comment_count_before = Comment.objects.count()
     response = author_client.post(delete_url)
     assertRedirects(response, f'{detail_url}#comments')
-    assert Comment.objects.count() == comment_count_before - 1
+    assert not Comment.objects.filter(id=comment.id).exists()

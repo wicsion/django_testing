@@ -59,7 +59,6 @@ def comment(news, author):
 @pytest.fixture
 def create_news(db):
     """Фикстура для создания нескольких новостей."""
-    News.objects.all().delete()
     today = datetime.today()
     for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1):
         News.objects.create(
@@ -111,3 +110,9 @@ def delete_url(comment):
 def login_url():
     """Фикстура для получения URL страницы входа в систему."""
     return reverse('users:login')
+
+
+@pytest.fixture
+def form_data():
+    """Возвращает словарь с данными для формы комментария."""
+    return {'text': 'Тестовый комментарий'}

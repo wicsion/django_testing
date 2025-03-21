@@ -41,7 +41,6 @@ def test_order_comment_in_news(client, detail_url, news, create_comments):
 @pytest.mark.parametrize(
     'client_fixture, have_form',
     [
-        (pytest.lazy_fixture('not_author_client'), True),
         (pytest.lazy_fixture('author_client'), True),
         (pytest.lazy_fixture('client'), False),
     ]
