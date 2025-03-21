@@ -60,17 +60,19 @@ def test_users_cant_edit_com(not_author_client,
     assert comment_from_db.news == comment.news
 
 
-def test_users_cant_delete_com(not_author_client, delete_url, comment):
+def test_users_cant_delete_com(not_author_client,
+                               delete_url, comment):
     """Пользователь не может удалить чужой комментарий."""
     initial_count = Comment.objects.count()
     response = not_author_client.post(delete_url)
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert Comment.objects.count() == initial_count
 
-def test_authors_can_delete_com(author_client, delete_url, detail_url, comment):
+
+def test_authors_can_delete_com(author_client, delete_url,
+                                detail_url, comment):
     """Автор может удалить свой комментарий."""
     initial_count = Comment.objects.count()
     response = author_client.post(delete_url)
     assertRedirects(response, f'{detail_url}#comments')
     assert Comment.objects.count() == initial_count - 1
-
